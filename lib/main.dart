@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:question_paper_ct/components/theoptionsfiesld.dart';
+import 'package:question_paper_ct/formatter.dart';
 
+Format taker = Format();
+
+enum option { option1, option2, option3, option4 }
 void main() {
   runApp(MyApp());
 }
@@ -25,81 +31,174 @@ class MyForm extends StatefulWidget {
 }
 
 class _MyFormState extends State<MyForm> {
+  option? correctOption = option.option1;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
-  static List<String> friendsList = [' '];
+  static List<String> optionsList = [''];
+  late TextEditingController scoreText;
+  static List<String> questionlist = [];
+  static List<List> answerlist = [];
+  static List<int> scorekeep = [0, 0, 0, 0];
+  static List<dynamic> finallist = [];
+  static List<int> totalscorelist = [];
+  int questionnumber = 1;
+  int ind = 0;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
+    scoreText = TextEditingController();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    scoreText.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: SizedBox(
-        height: 50,
-        width: 100,
-        child: FloatingActionButton(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(50.0))),
-            onPressed: () {},
-            child: Text(
-              'Submit',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
-            )),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(left: 30),
+        child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              questionnumber > 1
+                  ? SizedBox(
+                      height: 50,
+                      width: 150,
+                      child: FloatingActionButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(60.0))),
+                          onPressed: () {
+                            setState(() {
+                              questionnumber--;
+                              dataget();
+                            });
+                            //print(finallist[0]["\"questionText\""]);
+                          },
+                          child: Text(
+                            'Prev Question',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w900),
+                          )),
+                    )
+                  : SizedBox(),
+              SizedBox(
+                height: 50,
+                width: 150,
+                child: FloatingActionButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(60.0))),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
+                        totalscorelist.add(int.parse(scoreText.text));
+                        scorekeep[ind] = int.parse(scoreText.text);
+                        questionlist.add(_nameController.text);
+                        answerlist
+                            .add(taker.answerformatter(optionsList, scorekeep));
+                        finallist = taker.formatter(answerlist, questionlist);
+                        print(finallist);
+                        /* print(questionlist);
+                  print(scorekeep);
+                  print(optionsList); */
+                        setState(() {
+                          questionnumber++;
+                          _nameController.clear();
+                          scorelogic(option.option1);
+                          scoreText.clear();
+                          if (optionsList.length > 1) {
+                            optionsList.removeRange(1, optionsList.length);
+                          }
+                          optionsList[0] = '';
+                        });
+                      }
+                    },
+                    child: Text(
+                      'Next Question',
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
+                    )),
+              ),
+            ]),
       ),
-
-      /* Container(
-          width: 200.0,
-          height: 200.0,
-          color: Colors.black,
-          child: new RawMaterialButton(
-            shape: new CircleBorder(),
-            elevation: 0.0,
-            child: Text('Submit'),
-            onPressed: () {},
-          )), */
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: Text('Dynamic TextFormFields'),
+        title: Text('Question Format'),
       ),
       body: Form(
         key: _formKey,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: ListView(children: <Widget>[
+          child: ListView(children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // name textfield
+                Text(
+                  'Enter Your Question',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                ),
+                // question textfield
                 Padding(
                   padding: const EdgeInsets.only(right: 32.0),
-                  child: TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(hintText: 'Enter your name'),
-                    validator: (v) {
-                      if (v!.trim().isEmpty) return 'Please enter something';
-                      return null;
-                    },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Q$questionnumber. ',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      Expanded(
+                        flex: 5,
+                        child: TextFormField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                              hintText: 'Enter your questiontext'),
+                          validator: (v) {
+                            if (v!.trim().isEmpty)
+                              return 'Please enter the question';
+                            return null;
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: 30,
+                      ),
+                      Expanded(
+                        child: TextFormField(
+                          controller: scoreText,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(4)
+                          ],
+                          keyboardType: TextInputType.number,
+                          maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                          decoration: InputDecoration(hintText: 'score'),
+                          validator: (v) {
+                            if (v!.trim().isEmpty) return 'score';
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(
                   height: 20,
                 ),
                 Text(
-                  'Add Friends',
+                  'Add Options',
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                 ),
-                ..._getFriends(),
+
+                ..._getOptions(),
                 SizedBox(
                   height: 40,
                 ),
@@ -111,36 +210,108 @@ class _MyFormState extends State<MyForm> {
     );
   }
 
-  /// get firends text-fields
-  List<Widget> _getFriends() {
-    List<Widget>? friendsTextFields = [];
-    for (int i = 0; i < friendsList.length; i++) {
-      friendsTextFields.add(Padding(
+  /// get options text-fields
+  List<Widget> _getOptions() {
+    List<Widget> optionsTextFields = [];
+
+    for (int i = 0; i < optionsList.length; i++) {
+      optionsTextFields.add(Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: Row(
           children: [
-            Expanded(child: FriendTextFields(i)),
-            SizedBox(
-              width: 16,
+            Text(
+              (i + 1).toString() + ')',
+              style: TextStyle(fontSize: 20),
             ),
-            // we need add button at last friends row
-            _addRemoveButton(i == friendsList.length - 1, i),
+            SizedBox(
+              width: 10,
+            ),
+            Expanded(
+                flex: 5,
+                child: FriendTextFields(
+                  index: i,
+                  optionslist: optionsList,
+                )),
+            SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              child: Radio(
+                  value: option.values[i],
+                  groupValue: correctOption,
+                  onChanged: (option? value) {
+                    setState(() {
+                      scorelogic(value);
+                    });
+                  }),
+            ),
+            buttonkeepers(i),
           ],
         ),
       ));
     }
-    return friendsTextFields;
+
+    return optionsTextFields;
+  }
+
+//logic of adding the score
+  scorelogic(option? value) {
+    correctOption = value;
+    if (scoreText.text.isNotEmpty) {
+      if (correctOption == option.option1) {
+        ind = 0;
+        scorekeep[1] = scorekeep[2] = scorekeep[3] = 0;
+      } else if (correctOption == option.option2) {
+        ind = 1;
+        scorekeep[0] = scorekeep[2] = scorekeep[3] = 0;
+      } else if (correctOption == option.option3) {
+        ind = 2;
+        scorekeep[0] = scorekeep[1] = scorekeep[3] = 0;
+      } else {
+        ind = 3;
+        scorekeep[0] = scorekeep[1] = scorekeep[2] = 0;
+      }
+    } else {
+      scorekeep[0] = scorekeep[1] = scorekeep[2] = scorekeep[3] = 0;
+    }
+  }
+
+  //logic of the add/remove to appear in the UI
+  Widget buttonkeepers(int i) {
+    if ((optionsList.length == 2) | (optionsList.length == 3)) {
+      return Container(
+        width: 65,
+        child: Row(
+          children: [
+            addRemoveButton(
+                (optionsList.length == 1) & (optionsList.length < 4), i),
+            SizedBox(width: 4),
+            addRemoveButton(
+                (optionsList.length == 2) | (optionsList.length == 3), i)
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        width: 65,
+        alignment: optionsList.length == 1
+            ? Alignment.bottomRight
+            : Alignment.bottomLeft,
+        child: addRemoveButton(
+            (i == optionsList.length - 1) & (optionsList.length < 4), i),
+      );
+    }
   }
 
   /// add / remove button
-  Widget _addRemoveButton(bool add, int index) {
+  Widget addRemoveButton(bool add, int index) {
     return InkWell(
       onTap: () {
         if (add) {
-          // add new text-fields at the top of all friends textfields
-          friendsList.insert(0, ' ');
+          // add new text-fields at the bottom of each textfield
+          optionsList.insert(index + 1, '');
         } else
-          friendsList.removeAt(index);
+          optionsList.removeAt(index);
         setState(() {});
       },
       child: Container(
@@ -157,44 +328,19 @@ class _MyFormState extends State<MyForm> {
       ),
     );
   }
-}
 
-class FriendTextFields extends StatefulWidget {
-  final int index;
-  FriendTextFields(this.index);
-  @override
-  _FriendTextFieldsState createState() => _FriendTextFieldsState();
-}
-
-class _FriendTextFieldsState extends State<FriendTextFields> {
-  late TextEditingController _nameController;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-      _nameController.text = _MyFormState.friendsList[widget.index];
-    });
-
-    return TextFormField(
-      controller: _nameController,
-      onChanged: (v) => _MyFormState.friendsList[widget.index] = v,
-      decoration: InputDecoration(hintText: 'Enter your friend\'s name'),
-      validator: (v) {
-        if (v!.trim().isEmpty) return 'Please enter something';
-        return null;
-      },
-    );
+  dataget() {
+    optionsList.clear();
+    int counter = questionnumber;
+    _nameController.text =
+        questionlist[counter - 1]; //finallist[counter]["\"questionText\""];
+    scoreText.text = totalscorelist[counter - 1].toString();
+    for (int i = 0; i < finallist[counter - 1]["\"answers\""].length; i++) {
+      if (i == 0) {
+        optionsList.add(finallist[counter - 1]["\"answers\""][0]["\"text\""]);
+      } else {
+        optionsList.add(finallist[counter - 1]["\"answers\""][i]["\"text\""]);
+      }
+    }
   }
 }
