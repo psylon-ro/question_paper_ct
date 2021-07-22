@@ -43,6 +43,7 @@ class _MyFormState extends State<MyForm> {
   static List<int> totalscorelist = [];
   int questionnumber = 1;
   int ind = 0;
+  int counter = 1;
 
   @override
   void initState() {
@@ -77,8 +78,9 @@ class _MyFormState extends State<MyForm> {
                                   BorderRadius.all(Radius.circular(60.0))),
                           onPressed: () {
                             setState(() {
+                              counter--;
                               questionnumber--;
-                              dataget();
+                              dataget(counter);
                             });
                             //print(finallist[0]["\"questionText\""]);
                           },
@@ -98,26 +100,37 @@ class _MyFormState extends State<MyForm> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
-                        totalscorelist.add(int.parse(scoreText.text));
-                        scorekeep[ind] = int.parse(scoreText.text);
-                        questionlist.add(_nameController.text);
-                        answerlist
-                            .add(taker.answerformatter(optionsList, scorekeep));
-                        finallist = taker.formatter(answerlist, questionlist);
-                        print(finallist);
-                        /* print(questionlist);
-                  print(scorekeep);
-                  print(optionsList); */
-                        setState(() {
-                          questionnumber++;
-                          _nameController.clear();
-                          scorelogic(option.option1);
-                          scoreText.clear();
-                          if (optionsList.length > 1) {
-                            optionsList.removeRange(1, optionsList.length);
+
+                        if (counter >= finallist.length) {
+                          if (counter > finallist.length) {
+                            totalscorelist.add(int.parse(scoreText.text));
+                            scorekeep[ind] = int.parse(scoreText.text);
+                            questionlist.add(_nameController.text);
+                            answerlist.add(
+                                taker.answerformatter(optionsList, scorekeep));
+                            finallist =
+                                taker.formatter(answerlist, questionlist);
+                            print(finallist);
                           }
-                          optionsList[0] = '';
-                        });
+
+                          setState(() {
+                            counter++;
+                            questionnumber++;
+                            _nameController.clear();
+                            scorelogic(option.option1);
+                            scoreText.clear();
+                            if (optionsList.length > 1) {
+                              optionsList.removeRange(1, optionsList.length);
+                            }
+                            optionsList[0] = '';
+                          });
+                        } else {
+                          setState(() {
+                            counter++;
+                            questionnumber++;
+                            dataget(counter);
+                          });
+                        }
                       }
                     },
                     child: Text(
@@ -329,18 +342,50 @@ class _MyFormState extends State<MyForm> {
     );
   }
 
-  dataget() {
+  dataget(int count) {
     optionsList.clear();
-    int counter = questionnumber;
     _nameController.text =
-        questionlist[counter - 1]; //finallist[counter]["\"questionText\""];
-    scoreText.text = totalscorelist[counter - 1].toString();
-    for (int i = 0; i < finallist[counter - 1]["\"answers\""].length; i++) {
+        questionlist[count - 1]; //finallist[counter]["\"questionText\""];
+    scoreText.text = totalscorelist[count - 1].toString();
+    for (int i = 0; i < finallist[count - 1]["\"answers\""].length; i++) {
       if (i == 0) {
-        optionsList.add(finallist[counter - 1]["\"answers\""][0]["\"text\""]);
+        optionsList.add(finallist[count - 1]["\"answers\""][0]["\"text\""]
+            .replaceAll("\"", ""));
+        if (finallist[count - 1]["\"answers\""][0]["\"score\""] > 0) {
+          scorelogic(option.option1);
+        }
       } else {
-        optionsList.add(finallist[counter - 1]["\"answers\""][i]["\"text\""]);
+        optionsList.add(finallist[count - 1]["\"answers\""][i]["\"text\""]
+            .replaceAll("\"", ""));
+        switch (i) {
+          case 1:
+            if ((finallist[count - 1]["\"answers\""][1]["\"score\""] > 0)) {
+              scorelogic(option.option2);
+            }
+            break;
+
+          case 2:
+            if ((finallist[count - 1]["\"answers\""][2]["\"score\""] > 0)) {
+              scorelogic(option.option3);
+            }
+            break;
+
+          case 3:
+            if ((finallist[count - 1]["\"answers\""][3]["\"score\""] > 0)) {
+              scorelogic(option.option4);
+            }
+            break;
+        }
       }
     }
   }
 }
+
+                           /*  totalscorelist.add(int.parse(scoreText.text));
+                            scorekeep[ind] = int.parse(scoreText.text);
+                            questionlist.add(_nameController.text);
+                            answerlist.add(
+                                taker.answerformatter(optionsList, scorekeep));
+                            finallist =
+                                taker.formatter(answerlist, questionlist);
+                            print(finallist); */
