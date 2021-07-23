@@ -34,13 +34,13 @@ class _MyFormState extends State<MyForm> {
   option? correctOption = option.option1;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
-  static List<String> optionsList = [''];
+  List<String> optionsList = [''];
   late TextEditingController scoreText;
-  static List<String> questionlist = [];
-  static List<List> answerlist = [];
-  static List<int> scorekeep = [0, 0, 0, 0];
-  static List<dynamic> finallist = [];
-  static List<int> totalscorelist = [];
+  List<String> questionlist = [];
+  List<List> answerlist = [];
+  List<int> scorekeep = [0, 0, 0, 0];
+  List<dynamic> finallist = [];
+  List<int> totalscorelist = [];
   int questionnumber = 1;
   int ind = 0;
   int counter = 1;
@@ -81,8 +81,8 @@ class _MyFormState extends State<MyForm> {
                               counter--;
                               questionnumber--;
                               dataget(counter);
+                              updatedata(counter);
                             });
-                            //print(finallist[0]["\"questionText\""]);
                           },
                           child: Text(
                             'Prev Question',
@@ -99,7 +99,7 @@ class _MyFormState extends State<MyForm> {
                         borderRadius: BorderRadius.all(Radius.circular(60.0))),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
+                        //_formKey.currentState!.save();
 
                         if (counter >= finallist.length) {
                           if (counter > finallist.length) {
@@ -110,6 +110,7 @@ class _MyFormState extends State<MyForm> {
                                 taker.answerformatter(optionsList, scorekeep));
                             finallist =
                                 taker.formatter(answerlist, questionlist);
+
                             print(finallist);
                           }
 
@@ -129,6 +130,7 @@ class _MyFormState extends State<MyForm> {
                             counter++;
                             questionnumber++;
                             dataget(counter);
+                            updatedata(counter);
                           });
                         }
                       }
@@ -378,6 +380,13 @@ class _MyFormState extends State<MyForm> {
         }
       }
     }
+  }
+
+  updatedata(int count) {
+    print(count);
+    print('---------');
+    print(scoreText.text);
+    print(totalscorelist[count - 1] = int.parse(scoreText.text));
   }
 }
 
