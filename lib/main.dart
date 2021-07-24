@@ -44,6 +44,9 @@ class _MyFormState extends State<MyForm> {
   int questionnumber = 1;
   int ind = 0;
   int counter = 1;
+  bool textfieldenabler = true;
+  bool buttonenabler = true;
+  bool editsave = false;
 
   @override
   void initState() {
@@ -73,17 +76,24 @@ class _MyFormState extends State<MyForm> {
                       height: 50,
                       width: 150,
                       child: FloatingActionButton(
+                          backgroundColor: buttonenabler == true
+                              ? Colors.lightBlue[600]
+                              : Colors.lightBlue[200],
                           shape: RoundedRectangleBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(60.0))),
-                          onPressed: () {
-                            setState(() {
-                              counter--;
-                              questionnumber--;
-                              dataget(counter);
-                              updatedata(counter);
-                            });
-                          },
+                          onPressed: buttonenabler == true
+                              ? () {
+                                  setState(() {
+                                    editsave = true;
+                                    textfieldenabler = false;
+                                    counter--;
+                                    questionnumber--;
+
+                                    dataget(counter);
+                                  });
+                                }
+                              : () {},
                           child: Text(
                             'Prev Question',
                             style: TextStyle(
@@ -95,46 +105,44 @@ class _MyFormState extends State<MyForm> {
                 height: 50,
                 width: 150,
                 child: FloatingActionButton(
+                    backgroundColor: buttonenabler == true
+                        ? Colors.lightBlue[600]
+                        : Colors.lightBlue[200],
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(60.0))),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        //_formKey.currentState!.save();
+                    onPressed: buttonenabler == true
+                        ? () {
+                            if (_formKey.currentState!.validate()) {
+                              //_formKey.currentState!.save();
 
-                        if (counter >= finallist.length) {
-                          if (counter > finallist.length) {
-                            totalscorelist.add(int.parse(scoreText.text));
-                            scorekeep[ind] = int.parse(scoreText.text);
-                            questionlist.add(_nameController.text);
-                            answerlist.add(
-                                taker.answerformatter(optionsList, scorekeep));
-                            finallist =
-                                taker.formatter(answerlist, questionlist);
-
-                            print(finallist);
-                          }
-
-                          setState(() {
-                            counter++;
-                            questionnumber++;
-                            _nameController.clear();
-                            scorelogic(option.option1);
-                            scoreText.clear();
-                            if (optionsList.length > 1) {
-                              optionsList.removeRange(1, optionsList.length);
+                              if (counter >= finallist.length) {
+                                submitdata();
+                                textfieldenabler = true;
+                                editsave = false;
+                                setState(() {
+                                  counter++;
+                                  questionnumber++;
+                                  _nameController.clear();
+                                  scorelogic(option.option1);
+                                  scoreText.clear();
+                                  if (optionsList.length > 1) {
+                                    optionsList.removeRange(
+                                        1, optionsList.length);
+                                  }
+                                  optionsList[0] = '';
+                                });
+                              } else {
+                                setState(() {
+                                  editsave = true;
+                                  textfieldenabler = false;
+                                  counter++;
+                                  questionnumber++;
+                                  dataget(counter);
+                                });
+                              }
                             }
-                            optionsList[0] = '';
-                          });
-                        } else {
-                          setState(() {
-                            counter++;
-                            questionnumber++;
-                            dataget(counter);
-                            updatedata(counter);
-                          });
-                        }
-                      }
-                    },
+                          }
+                        : () {},
                     child: Text(
                       'Next Question',
                       style:
@@ -145,7 +153,36 @@ class _MyFormState extends State<MyForm> {
       ),
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: Text('Question Format'),
+        title: Text(
+          'Question Format',
+          style: TextStyle(color: Colors.white),
+        ),
+        leading: null,
+        actions: <Widget>[
+          editsave == true
+              ? TextButton(
+                  child: Text(
+                    textfieldenabler == false ? 'Edit' : 'Save',
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      setState(() {
+                        textfieldenabler = !textfieldenabler;
+                        buttonenabler = !buttonenabler;
+
+                        if (textfieldenabler == false) {
+                          updatedata(counter);
+                        }
+                      });
+                    }
+
+                    /* if (_formKey.currentState!.validate()) {
+
+                } */
+                  })
+              : SizedBox(),
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -173,6 +210,7 @@ class _MyFormState extends State<MyForm> {
                       Expanded(
                         flex: 5,
                         child: TextFormField(
+                          enabled: textfieldenabler,
                           controller: _nameController,
                           decoration: InputDecoration(
                               hintText: 'Enter your questiontext'),
@@ -188,6 +226,7 @@ class _MyFormState extends State<MyForm> {
                       ),
                       Expanded(
                         child: TextFormField(
+                          enabled: textfieldenabler,
                           controller: scoreText,
                           inputFormatters: <TextInputFormatter>[
                             FilteringTextInputFormatter.digitsOnly,
@@ -246,6 +285,7 @@ class _MyFormState extends State<MyForm> {
                 child: FriendTextFields(
                   index: i,
                   optionslist: optionsList,
+                  textfieldenabler: textfieldenabler,
                 )),
             SizedBox(
               width: 10,
@@ -254,13 +294,15 @@ class _MyFormState extends State<MyForm> {
               child: Radio(
                   value: option.values[i],
                   groupValue: correctOption,
-                  onChanged: (option? value) {
-                    setState(() {
-                      scorelogic(value);
-                    });
-                  }),
+                  onChanged: textfieldenabler == true
+                      ? (option? value) {
+                          setState(() {
+                            scorelogic(value);
+                          });
+                        }
+                      : (value) {}),
             ),
-            buttonkeepers(i),
+            textfieldenabler == true ? buttonkeepers(i) : SizedBox(),
           ],
         ),
       ));
@@ -382,19 +424,26 @@ class _MyFormState extends State<MyForm> {
     }
   }
 
+  submitdata() {
+    {
+      if (counter > finallist.length) {
+        totalscorelist.add(int.parse(scoreText.text));
+        scorekeep[ind] = int.parse(scoreText.text);
+        questionlist.add(_nameController.text);
+        answerlist.add(taker.answerformatter(optionsList, scorekeep));
+        finallist = taker.formatter(answerlist, questionlist);
+
+        print(finallist);
+      }
+    }
+  }
+
   updatedata(int count) {
-    print(count);
-    print('---------');
-    print(scoreText.text);
-    print(totalscorelist[count - 1] = int.parse(scoreText.text));
+    totalscorelist[count - 1] = int.parse(scoreText.text);
+    questionlist[count - 1] = _nameController.text;
+    scorekeep[ind] = int.parse(scoreText.text);
+    answerlist[count - 1] = taker.answerformatter(optionsList, scorekeep);
+    finallist = taker.formatter(answerlist, questionlist);
+    print(finallist);
   }
 }
-
-                           /*  totalscorelist.add(int.parse(scoreText.text));
-                            scorekeep[ind] = int.parse(scoreText.text);
-                            questionlist.add(_nameController.text);
-                            answerlist.add(
-                                taker.answerformatter(optionsList, scorekeep));
-                            finallist =
-                                taker.formatter(answerlist, questionlist);
-                            print(finallist); */
