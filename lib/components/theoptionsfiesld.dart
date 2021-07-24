@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 class FriendTextFields extends StatefulWidget {
   final int index;
   final List optionslist;
+  final bool textfieldenabler;
 
-  FriendTextFields({required this.index, required this.optionslist});
+  FriendTextFields(
+      {required this.index,
+      required this.optionslist,
+      required this.textfieldenabler});
   @override
   _FriendTextFieldsState createState() => _FriendTextFieldsState();
 }
@@ -37,6 +41,7 @@ class _FriendTextFieldsState extends State<FriendTextFields> {
             Expanded(
               flex: 5,
               child: TextFormField(
+                enabled: widget.textfieldenabler,
                 controller: optionController,
                 onChanged: (v) => widget.optionslist[widget.index] = v,
                 decoration: InputDecoration(hintText: 'Enter your option'),
