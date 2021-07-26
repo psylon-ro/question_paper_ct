@@ -4,6 +4,8 @@ import 'package:question_paper_ct/components/dialogbox.dart';
 import 'package:question_paper_ct/components/theoptionsfiesld.dart';
 import 'package:question_paper_ct/formatter.dart';
 
+import 'end_page.dart';
+
 Format taker = Format();
 
 enum option { option1, option2, option3, option4 }
@@ -96,26 +98,35 @@ class _MyFormState extends State<MyForm> {
                       : Colors.lightBlue[200],
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(60.0))),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      showDialog(
-                        context: context,
-                        barrierDismissible:
-                            false, // user must tap button for close dialog!
-                        builder: (BuildContext context) {
-                          return Alertboxx(
-                            onleftbuttonpressed: () {
-                              Navigator.of(context).pop(ConfirmAction.Cancel);
-                            },
-                            onrightbuttonpressed: () {
-                              submitdata();
-                              Navigator.of(context).pop(ConfirmAction.Accept);
-                            },
-                          );
-                        },
-                      );
-                    }
-                  },
+                  onPressed: buttonenabler == true
+                      ? () {
+                          if (_formKey.currentState!.validate()) {
+                            showDialog(
+                              context: context,
+                              barrierDismissible:
+                                  false, // user must tap button for close dialog!
+                              builder: (BuildContext context) {
+                                return Alertboxx(
+                                  onleftbuttonpressed: () {
+                                    Navigator.of(context)
+                                        .pop(ConfirmAction.Cancel);
+                                  },
+                                  onrightbuttonpressed: () {
+                                    submitdata();
+                                    Navigator.of(context)
+                                        .pop(ConfirmAction.Accept);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Hurray()),
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          }
+                        }
+                      : () {},
                   child: Text(
                     'Final Submit',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
@@ -169,7 +180,7 @@ class _MyFormState extends State<MyForm> {
               ),
             ]),
       ),
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           'Question Format',
