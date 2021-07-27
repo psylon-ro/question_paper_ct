@@ -115,10 +115,13 @@ class _MyFormState extends State<MyForm> {
                                     submitdata();
                                     Navigator.of(context)
                                         .pop(ConfirmAction.Accept);
+                                    var sum =
+                                        totalscorelist.reduce((a, b) => a + b);
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => Hurray()),
+                                          builder: (context) =>
+                                              Hurray(totalscore: sum)),
                                     );
                                   },
                                 );

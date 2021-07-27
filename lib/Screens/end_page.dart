@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class Hurray extends StatelessWidget {
+  final int totalscore;
+  Hurray({required this.totalscore});
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -9,7 +11,9 @@ class Hurray extends StatelessWidget {
       home: Scaffold(
         resizeToAvoidBottomInset: false,
         body: Container(
-          child: LoginPage(),
+          child: LoginPage(
+            totalsco: totalscore,
+          ),
         ),
       ),
     );
@@ -17,7 +21,8 @@ class Hurray extends StatelessWidget {
 }
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  final int totalsco;
+  LoginPage({required this.totalsco});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -56,16 +61,16 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: Text(
                           "Hurray!!",
-                          style: TextStyle(color: _headingColor, fontSize: 28),
+                          style: TextStyle(color: _headingColor, fontSize: 35),
                         ),
                       ),
                       Container(
                         margin: EdgeInsets.all(20),
                         padding: EdgeInsets.symmetric(horizontal: 32),
                         child: Text(
-                          "Question Paper Completed.",
+                          "Question Paper Completed.\n Total Score = ${widget.totalsco} marks.",
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: _headingColor, fontSize: 16),
+                          style: TextStyle(color: _headingColor, fontSize: 20),
                         ),
                       )
                     ],
